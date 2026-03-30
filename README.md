@@ -103,10 +103,10 @@ pip install -r requirements.txt
 
 ## Roadmap
 
-- **v0.2** — Generic PDE interface, CSV data loading, Streamlit web app ← you are here
-- **v0.3** — Pip package, transient problems, benchmark suite
-- **v0.4** — Uncertainty quantification, adaptive collocation
-- **v0.5** — arXiv paper, community physics library
+- **v0.1** — Generic PDE interface, CSV data loading, Streamlit web app ← you are here
+- **v0.2** — Pip package, transient problems, proper physics enforcement
+- **v0.3** — Uncertainty quantification, benchmark suite
+- **v0.4** — arXiv paper, community physics library
 - **v1.0** — Desktop app, cloud platform, enterprise integrations
 
 ---
