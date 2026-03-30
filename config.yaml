@@ -1,0 +1,5 @@
+inputs:
+- x
+- k
+- f
+output: u
