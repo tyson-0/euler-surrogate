@@ -11,7 +11,7 @@ st.set_page_config(page_title="Euler — Physics Informed Surrogate", layout="wi
 st.title("Euler")
 st.caption("Physics Informed Surrogate Modeling — by Tyson Physics")
 
-# Step 1 - upload CSV
+# user data input field
 st.subheader("1. Upload your simulation data")
 uploaded = st.file_uploader("Upload CSV file", type="csv")
 
@@ -24,7 +24,8 @@ if uploaded:
     st.dataframe(df.head())
     st.write(f"**{len(df)} rows** | **{len(df.columns)} columns** | Columns: {list(df.columns)}")
 
-    # Step 2 - select columns
+    # select training stuff
+    
     st.subheader("2. Define inputs and output")
     col1, col2 = st.columns(2)
     with col1:
@@ -38,9 +39,20 @@ if uploaded:
             yaml.dump(config, f)
         st.success(f"Config saved — inputs: {input_cols}, output: {output_col}")
 
-        # Step 3 - define PDE
+        # section to write PDE
         st.subheader("3. Define your PDE")
         st.caption("Use diff(vars['u'], vars['x'], order=2) for derivatives. Variables must match your input column names.")
+
+        st.info("""
+            **How to write your PDE:**
+            - `vars["column_name"]` — use for variables you want to differentiate (spatial/temporal like x, t)
+            - `real_vars["column_name"]` — use for physical constants and parameters (like k, f, T1, T2)
+            - `diff(vars["u"], vars["x"], order=2)` — computes d²u/dx²
+            - All column names must match your selected input columns exactly
+            - Return the residual — the expression that should equal zero
+            """)
+
+
         pde_code = st.text_area(
             "Write your PDE residual function (should return 0 when physics is satisfied)",
             value="""def my_pde(vars, real_vars, diff):
@@ -51,7 +63,7 @@ if uploaded:
             height=150
         )
 
-        # Step 4 - training settings
+        # to setup training
         st.subheader("4. Training settings")
         col1, col2 = st.columns(2)
         with col1:
@@ -59,7 +71,7 @@ if uploaded:
         with col2:
             lambda_physics = st.slider("Physics loss weight", 0.0, 1.0, 0.01)
 
-        # Step 5 - train
+        # to train. to modify this, please take care of callback argument in core.py
         st.subheader("5. Train")
         if st.button("Train Model", type="primary"):
             try:
@@ -96,7 +108,7 @@ if uploaded:
             except Exception as e:
                 st.error(f"Error during training: {e}")
 
-        # Step 6 - predict
+        # prediction section
         if "model" in st.session_state:
             st.subheader("6. Predict")
             st.caption("Enter values for each input variable")
