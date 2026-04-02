@@ -1,93 +1,65 @@
-# Euler — Physics-Informed Surrogate Modeling
+# Euler
 
-**By Tyson Physics**
+Open-source surrogate modeling framework for engineers, with physics-informed learning.
 
-Euler is an open-source Python library that trains a neural surrogate model on your simulation data — then predicts outputs instantly for any new input, while enforcing your governing physics equation.
-
----
-
-## The Problem
-
-Running engineering simulations is slow and expensive. A single FEA or CFD run can take hours. Testing hundreds of design variations takes days.
-
-**Euler fixes this.**
-
-Train once on your simulation data. Query instantly forever.
+By Tyson Physics
 
 ---
 
-## How It Works
+## The idea
 
-| | Traditional Simulation | Euler |
-|---|---|---|
-| Speed | Hours per run | Milliseconds |
-| Cost | Expensive software | Free and open source |
-| Physics | Solved numerically | Enforced by neural network |
-| Scalability | One run at a time | Million queries instantly |
+Every time you change a design parameter, you run the simulation again. That takes hours. Euler learns from your existing simulation data and predicts instantly for any new input — no simulation needed.
+
+Train once. Predict forever.
 
 ---
 
-## Quick Start
+## Try it
 
-### 1. Prepare your simulation data as a CSV
+No-code web app: https://euler-surrogate.streamlit.app
 
-```
-T1, T2, x, k, f, u
-100, 50, 0.1, 200, 50000, 67.3
-100, 50, 0.3, 200, 50000, 54.1
-...
-```
+Upload your CSV, pick your input and output columns, hit train, and start predicting. No Python required.
 
-### 2. Define your config.yaml
+---
 
-```yaml
-inputs: [T1, T2, x, k, f]
-output: u
-```
-
-### 3. Train and predict
+## API
 
 ```python
 from core import Euler
 
-def my_pde(vars, real_vars, diff):
-    d2u_dx2 = diff(vars["u"], vars["x"], order=2)
-    k = real_vars["k"]
-    f = real_vars["f"]
-    return (k / f) * d2u_dx2 + 1
-
 model = Euler("data.csv")
-model.set_pde(my_pde)
 model.fit(epochs=5000)
+model.save("my_model.pt")
 
-result = model.predict([100, 50, 0.5, 200, 50000])
-print(f"Predicted: {result:.4f}")
+print(model.predict([100, 50, 0.5, 200, 50000]))
+```
+
+Loading a saved model later:
+
+```python
+model = Euler.from_saved("my_model.pt")
+print(model.predict([100, 50, 0.5, 200, 50000]))
 ```
 
 ---
 
-## Web App
+## Two modes
 
-Don't want to write code? Use the Euler web app:
+Surrogate mode is pure data-driven and works reliably for any simulation dataset. This is what you should use.
 
-**[Launch Euler App →](https://euler-surrogate.streamlit.app)**
-
-Upload your CSV, define your inputs and outputs, train with one click, and query predictions instantly — no coding required.
+Physics Informed mode lets you define your governing differential equation so the model enforces it during training. This is experimental in v0.1 — physics scaling with parametric inputs is still being fixed. It will work properly in v0.2.
 
 ---
 
-## Benchmark
+## Your data format
 
-Tested on 1D steady-state heat equation with source term:
+Euler works with any simulation CSV. Rows are simulation runs, columns are your parameters and output:
 
-`k * d²u/dx² + f = 0`
-
-| Data Points | Analytical | Euler | Error |
-|-------------|-----------|-------|-------|
-| 10000 | 43.75 | 43.25 | 0.50° |
-| 100 | 43.75 | 43.07 | 0.68° |
-
-Sub-degree accuracy on thermal problems with sparse data.
+```
+T1,  T2,  x,   k,   f,      u
+100, 50,  0.1, 200, 50000,  67.3
+100, 50,  0.3, 200, 50000,  54.1
+```
 
 ---
 
@@ -101,30 +73,28 @@ pip install -r requirements.txt
 
 ---
 
+## What is working and what is not
+
+Surrogate mode works well. You can train on any simulation CSV and get accurate predictions. Save and load models. Use the web app without writing code.
+
+Physics enforcement is integrated but experimental. The framework accepts any PDE you write. The issue is scaling — derivatives computed in normalized input space don't match real physical constants, causing the physics loss to not enforce correctly. This is a known problem in parametric PINNs and the fix is being implemented for v0.2.
+
+---
+
 ## Roadmap
 
-- **v0.1** — Generic PDE interface, CSV data loading, Streamlit web app ← you are here
-- **v0.2** — Pip package, transient problems, proper physics enforcement
-- **v0.3** — Uncertainty quantification, benchmark suite
-- **v0.4** — arXiv paper, community physics library
-- **v1.0** — Desktop app, cloud platform, enterprise integrations
+v0.1.1 — surrogate mode, save and load, Streamlit web app (current)
 
----
+v0.2 — physics enforcement fixed, pip installable package
 
-## About Tyson Physics
+v0.3 — transient problems, uncertainty quantification
 
-Tyson Physics builds open-source scientific AI tools for engineers and researchers. We believe simulation AI should be what NumPy is to data science — open, free, and owned by the community.
-
----
-
-## License
-
-MIT License — free for everyone.
+v1.0 — desktop app, cloud platform
 
 ---
 
 ## Contributing
 
-Contributions welcome. Open an issue or submit a pull request.
+Open an issue if something breaks. Pull requests are welcome.
 
-*Built by an engineer who got tired of waiting hours for simulation results.*
+MIT License. Built by an engineer who got tired of waiting hours for simulation results.
