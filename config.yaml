@@ -1,4 +1,6 @@
 inputs:
+- T1
+- T2
 - x
 - k
 - f
